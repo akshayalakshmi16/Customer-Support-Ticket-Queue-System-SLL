@@ -1,0 +1,144 @@
+class Ticket {
+    int ticketId;
+    String customerName;
+    String issueDescription;
+    String priority;
+
+    Ticket(int id, String name, String issue, String priority) {
+        this.ticketId = id;
+        this.customerName = name;
+        this.issueDescription = issue;
+        this.priority = priority;
+    }
+}
+
+class SLLNode {
+    Ticket ticket;
+    SLLNode next;
+
+    SLLNode(Ticket ticket) {
+        this.ticket = ticket;
+    }
+}
+
+class TicketQueueSLL {
+
+    private SLLNode head;
+    private SLLNode tail;
+
+    /* Add Ticket (Priority Based) */
+    public void addTicket(int id, String name, String issue, String priority) {
+        SLLNode newNode = new SLLNode(new Ticket(id, name, issue, priority));
+
+        if (head == null) {
+            head = tail = newNode;
+            return;
+        }
+
+        if (priority.equals("Critical")) {
+            newNode.next = head;
+            head = newNode;
+            return;
+        }
+
+        SLLNode current = head;
+        SLLNode prev = null;
+
+        while (current != null &&
+              (current.ticket.priority.equals("Critical") ||
+               current.ticket.priority.equals("High") && priority.equals("Normal"))) {
+            prev = current;
+            current = current.next;
+        }
+
+        if (prev == null) {
+            newNode.next = head;
+            head = newNode;
+        } else {
+            prev.next = newNode;
+            newNode.next = current;
+            if (current == null) tail = newNode;
+        }
+    }
+
+    /* Resolve Ticket */
+    public void resolveTicket() {
+        if (head == null) {
+            System.out.println("No tickets to resolve");
+            return;
+        }
+        System.out.println("Resolved Ticket ID: " + head.ticket.ticketId);
+        head = head.next;
+        if (head == null) tail = null;
+    }
+
+    /* Escalate Ticket */
+    public void escalateTicket(int ticketId) {
+        if (head == null || head.ticket.ticketId == ticketId) return;
+
+        SLLNode prev = null;
+        SLLNode current = head;
+
+        while (current != null && current.ticket.ticketId != ticketId) {
+            prev = current;
+            current = current.next;
+        }
+
+        if (current == null) return;
+
+        prev.next = current.next;
+        if (current == tail) tail = prev;
+
+        current.next = head;
+        head = current;
+    }
+
+    /* Cancel Ticket */
+    public void cancelTicket(int ticketId) {
+        if (head == null) return;
+
+        if (head.ticket.ticketId == ticketId) {
+            head = head.next;
+            if (head == null) tail = null;
+            return;
+        }
+
+        SLLNode prev = null;
+        SLLNode current = head;
+
+        while (current != null && current.ticket.ticketId != ticketId) {
+            prev = current;
+            current = current.next;
+        }
+
+        if (current == null) return;
+
+        prev.next = current.next;
+        if (current == tail) tail = prev;
+    }
+
+    /* Find Ticket Position */
+    public int findTicket(int ticketId) {
+        int pos = 1;
+        SLLNode current = head;
+
+        while (current != null) {
+            if (current.ticket.ticketId == ticketId)
+                return pos;
+            current = current.next;
+            pos++;
+        }
+        return -1;
+    }
+
+    /* List Tickets */
+    public void listTickets() {
+        SLLNode current = head;
+        while (current != null) {
+            Ticket t = current.ticket;
+            System.out.println(t.ticketId + " | " + t.customerName +
+                    " | " + t.issueDescription + " | " + t.priority);
+            current = current.next;
+        }
+    }
+}
